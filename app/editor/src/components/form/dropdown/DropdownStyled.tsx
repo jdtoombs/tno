@@ -11,7 +11,7 @@ export const Dropdown = styled.div<IDropdownProps>`
     text-align: left;
     vertical-align: middle;
     user-select: text;
-    border: 1px solid transparent;
+    border: 1px solid #606060;
     padding: 0.375rem 0.75rem;
     font-size: 1rem;
     line-height: 1.6;

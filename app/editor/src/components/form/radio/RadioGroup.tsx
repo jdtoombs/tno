@@ -2,6 +2,8 @@ import React, { InputHTMLAttributes } from 'react';
 
 import { instanceOfIOption, IOptionItem } from '..';
 import { Radio, RadioVariant } from '.';
+import { StyledSpan } from './SpanStyled';
+import { StyledDiv } from './StyledDiv';
 
 export interface IRadioGroupProps<OT extends string | number | IOptionItem | HTMLOptionElement>
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
@@ -33,6 +35,7 @@ export interface IRadioGroupProps<OT extends string | number | IOptionItem | HTM
    * OnChange event
    */
   onChange?: (event: React.ChangeEvent<HTMLInputElement>, values: OT | undefined) => void;
+  direction?: 'row' | 'col';
 }
 
 /**
@@ -48,6 +51,7 @@ export const RadioGroup = <OT extends string | number | IOptionItem | HTMLOption
   options,
   value,
   onChange,
+  direction,
   ...rest
 }: IRadioGroupProps<OT>) => {
   const [selected, setSelected] = React.useState<OT | undefined>(value);
@@ -72,65 +76,70 @@ export const RadioGroup = <OT extends string | number | IOptionItem | HTMLOption
   };
 
   return (
-    <div className="frm-in rag">
+    <>
       {label && (
-        <label htmlFor={`dpn-${name}`} data-for="main-tooltip" data-tip={tooltip}>
-          {label}
-        </label>
+        <>
+          <label htmlFor={`dpn-${name}`} data-for="main-tooltip" data-tip={tooltip}>
+            <b>{label}</b>
+          </label>
+          <br />
+        </>
       )}
-      {options
-        ? options.map((option) => {
-            if (instanceOfIOption(option)) {
-              const item = option as IOptionItem;
-              return (
-                <span key={item.value}>
-                  <Radio
-                    id={`${name}-${item.value}`}
-                    name={name}
-                    value={item.value}
-                    checked={item.value === (selected as IOptionItem)?.value}
-                    onChange={handleChange}
-                    {...rest}
-                  />
-                  <label htmlFor={`${name}-${item.value}`}>{item.label}</label>
-                </span>
-              );
-            } else if (typeof option === 'object') {
-              // TODO: Validate option is HTMLOptionElement
-              return option;
-            } else if (typeof option === 'number') {
-              const value = option as number;
-              return (
-                <span key={value}>
-                  <Radio
-                    id={`${name}-${value}`}
-                    name={name}
-                    value={value}
-                    checked={value === selected}
-                    {...rest}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor={`${name}-${value}`}>{value}</label>
-                </span>
-              );
-            } else {
-              const value = option as string;
-              return (
-                <span key={value}>
-                  <Radio
-                    id={`${name}-${value}`}
-                    name={name}
-                    value={value}
-                    checked={value === selected}
-                    {...rest}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor={`${name}-${value}`}>{value}</label>
-                </span>
-              );
-            }
-          })
-        : children}
-    </div>
+      <StyledDiv direction={direction} className="frm-in rag">
+        {options
+          ? options.map((option) => {
+              if (instanceOfIOption(option)) {
+                const item = option as IOptionItem;
+                return (
+                  <StyledSpan key={item.value}>
+                    <Radio
+                      id={`${name}-${item.value}`}
+                      name={name}
+                      value={item.value}
+                      checked={item.value === (selected as IOptionItem)?.value}
+                      onChange={handleChange}
+                      {...rest}
+                    />
+                    <label htmlFor={`${name}-${item.value}`}>{item.label}</label>
+                  </StyledSpan>
+                );
+              } else if (typeof option === 'object') {
+                // TODO: Validate option is HTMLOptionElement
+                return option;
+              } else if (typeof option === 'number') {
+                const value = option as number;
+                return (
+                  <span key={value}>
+                    <Radio
+                      id={`${name}-${value}`}
+                      name={name}
+                      value={value}
+                      checked={value === selected}
+                      {...rest}
+                      onChange={handleChange}
+                    />
+                    <label htmlFor={`${name}-${value}`}>{value}</label>
+                  </span>
+                );
+              } else {
+                const value = option as string;
+                return (
+                  <span key={value}>
+                    <Radio
+                      id={`${name}-${value}`}
+                      name={name}
+                      value={value}
+                      checked={value === selected}
+                      {...rest}
+                      onChange={handleChange}
+                    />
+                    <label htmlFor={`${name}-${value}`}>{value}</label>
+                  </span>
+                );
+              }
+            })
+          : children}
+      </StyledDiv>
+    </>
   );
 };

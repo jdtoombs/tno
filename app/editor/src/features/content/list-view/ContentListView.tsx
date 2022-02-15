@@ -188,6 +188,7 @@ export const ContentListView: React.FC = () => {
           <RadioGroup
             name="timeFrame"
             label="Time Frame"
+            direction="row"
             tooltip="Date created"
             value={filter.timeFrame}
             options={timeFrames}

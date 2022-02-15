@@ -72,6 +72,9 @@ export const useApiEditor = (
       getUsers: async () => {
         return await handleRequest<IUserModel[]>(() => summon.get(`/editor/users`));
       },
+      addContent: async (content: IContentModel, id?: number) => {
+        return await handleRequest<IContentModel>(() => summon.post(`/editor/contents/${id}`));
+      },
     }),
     [summon],
   );

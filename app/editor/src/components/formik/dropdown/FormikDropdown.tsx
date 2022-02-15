@@ -24,6 +24,11 @@ export const FormikDropdown = <T,>({
   return (
     <styled.FormikDropdown>
       <div>
+        {label && (
+          <b>
+            <label htmlFor={id ?? `txt-${name}`}>{label}</label>
+          </b>
+        )}
         <Dropdown
           id={id ?? `dpn-${name}`}
           name={name}

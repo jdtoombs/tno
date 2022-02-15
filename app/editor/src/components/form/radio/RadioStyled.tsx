@@ -5,7 +5,6 @@ import { IRadioProps, RadioVariant } from '.';
 export const Radio = styled.input<IRadioProps>`
   margin: 1px 2px 1px 2px;
   text-decoration: ${(props) => (props.variant === RadioVariant.link ? 'underline' : 'none')};
-  display: inline-block;
   font-weight: 400;
   text-align: left;
   vertical-align: middle;

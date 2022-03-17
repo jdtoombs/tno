@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const GridTable = styled.div`
   display: grid;
+  // width: 400px;
   padding: 5px;
   border-radius: 0.25em;
   grid-auto-rows: auto;

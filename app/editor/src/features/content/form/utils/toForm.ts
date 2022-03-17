@@ -6,6 +6,7 @@ import { IContentForm } from '../interfaces';
 export function toForm(model: IContentModel): IContentForm {
   // return form values in valid API format on submit of ContentForm
   // not utilized properly right now - update coming
+  console.log(model.timeTrackings, 'model');
   return {
     id: model.id,
     uid: model.uid ?? '',
@@ -23,6 +24,7 @@ export function toForm(model: IContentModel): IContentForm {
     ownerId: model.ownerId,
     seriesId: model.seriesId,
     publishedOn: moment(model.publishedOn).format('MM-dd-YYYY HH:mm:ss'),
+    timeTrackings: model.timeTrackings ?? [],
     // Print Content
     section: model.printContent?.section ?? '',
     edition: model.printContent?.edition ?? '',

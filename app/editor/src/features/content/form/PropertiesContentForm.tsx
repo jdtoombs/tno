@@ -2,13 +2,21 @@ import { Button, ButtonVariant } from 'components/button';
 import { Col } from 'components/col';
 import { IOptionItem, OptionItem, RadioGroup, SelectDate } from 'components/form';
 import { FormikCheckbox, FormikDropdown, FormikText, FormikTextArea } from 'components/formik';
+import { Modal } from 'components/modal/Modal';
 import { Row } from 'components/row';
+import { Upload } from 'components/upload';
 import { useFormikContext } from 'formik';
-import React from 'react';
+import { ITimeTrackingModel } from 'hooks';
+import useModal from 'hooks/modal/useModal';
+import moment from 'moment';
+import React, { useEffect } from 'react';
 import { useLookup } from 'store/hooks';
+import { getSortableOptions } from 'utils';
+import { string } from 'yup';
 
 import { expireOptions, summaryOptions, toningOptions } from './constants';
 import { IContentForm } from './interfaces';
+import { TimeLogTable } from './TimeLogTable';
 
 export interface IContentSubForms {
   setContent: (content: IContentForm) => void;
@@ -16,21 +24,70 @@ export interface IContentSubForms {
 }
 
 export const PropertiesContentForm: React.FC<IContentSubForms> = ({ setContent, content }) => {
-  const [{ series: lSeries }] = useLookup();
-  const { values } = useFormikContext<IContentForm>();
+  const [{ series: lSeries, categories }] = useLookup();
+  const { values, setFieldValue } = useFormikContext<IContentForm>();
+  const [tags, setTags] = React.useState<string[]>();
+
+  const [categoryTypes, setCategoryTypes] = React.useState<IOptionItem[]>([]);
+
+  React.useEffect(() => {
+    setCategoryTypes(getSortableOptions(categories));
+  }, [categories]);
+
+  const { isShowing, toggle } = useModal();
 
   const [series, setSeries] = React.useState<IOptionItem[]>();
 
   const formatTime = (date: string) => {
     const converted = new Date(date);
-    return !!converted.getTime()
-      ? `${converted.getHours()}:${converted.getMinutes()}:${converted.getSeconds()}`
-      : '';
+    return !!converted.getTime() ? converted.getTime() : '';
   };
 
   React.useEffect(() => {
     setSeries(lSeries.map((m: any) => new OptionItem(m.name, m.id)));
   }, [lSeries]);
+
+  const tagMatch = /(?<=\[).+?(?=\])/g;
+  var result;
+  const fakeTimeTrackings = [
+    {
+      userId: 1,
+      activity: 'Working Hard',
+      effort: '12',
+      contentId: 8,
+      createdOn: new Date().toJSON().slice(0, 10).replace(/-/g, '/'),
+    },
+    {
+      userId: 2,
+      activity: 'Debugging',
+      effort: '2',
+      contentId: 8,
+      createdOn: new Date().toJSON().slice(0, 10).replace(/-/g, '/'),
+    },
+    {
+      userId: 3,
+      activity: 'Updating',
+      effort: '2.34',
+      contentId: 8,
+      createdOn: new Date().toJSON().slice(0, 10).replace(/-/g, '/'),
+    },
+  ];
+
+  const getTotalTime = () => {
+    let count = 0;
+    fakeTimeTrackings.forEach((t: ITimeTrackingModel) => (count += Number(t.effort)));
+    return count;
+  };
+
+  const [effort, setEffort] = React.useState(getTotalTime());
+
+  React.useEffect(() => {
+    if (content.summary) {
+      result = content.summary.match(tagMatch)?.toString();
+      console.log(result);
+      setTags(result?.split(', '));
+    }
+  }, [content.summary]);
 
   return (
     <Col style={{ margin: '3%' }}>
@@ -39,9 +96,12 @@ export const PropertiesContentForm: React.FC<IContentSubForms> = ({ setContent, 
           <Row>
             <FormikDropdown
               className="md"
-              isDisabled
               value={series && series.find((s: any) => s.value === values.seriesId)}
-              onChange={(e: any) => setContent({ ...content, seriesId: e.value })}
+              onChange={(e: any) => {
+                setContent({ ...content, seriesId: e.value });
+                setFieldValue('seriesId', content.seriesId);
+                console.log(values.seriesId);
+              }}
               options={series}
               outerClassName="space-right"
               name="seriesId"
@@ -53,9 +113,9 @@ export const PropertiesContentForm: React.FC<IContentSubForms> = ({ setContent, 
             <FormikDropdown
               outerClassName="space-right"
               className="md"
-              isDisabled
-              name="eod"
+              name="categories"
               label="EoD Category"
+              options={categoryTypes}
             />
             <FormikDropdown isDisabled className="md" name="score" label="Score" />
           </Row>
@@ -76,7 +136,7 @@ export const PropertiesContentForm: React.FC<IContentSubForms> = ({ setContent, 
             <Col style={{ marginTop: '0.45em' }}>
               <FormikText
                 disabled
-                value={values.publishedOn ? formatTime(values.publishedOn!) : ''}
+                value={formatTime(values.publishedOn)}
                 name="time"
                 label="Time"
               />
@@ -92,7 +152,13 @@ export const PropertiesContentForm: React.FC<IContentSubForms> = ({ setContent, 
         </Col>
         <Row style={{ marginLeft: '10%', marginTop: '1%' }}>
           <Col>
-            <RadioGroup disabled spaceUnderRadio name="test" options={expireOptions} />
+            <RadioGroup
+              spaceUnderRadio
+              name="test"
+              options={expireOptions}
+              value={expireOptions.find((e) => e.value === values?.licenseId)}
+              onChange={(e) => setContent({ ...content, licenseId: Number(e.target.value) })}
+            />
           </Col>
           <Col>
             <FormikCheckbox
@@ -106,7 +172,13 @@ export const PropertiesContentForm: React.FC<IContentSubForms> = ({ setContent, 
         </Row>
       </Row>
       <Row>
-        <RadioGroup disabled direction="row" name="test" options={summaryOptions} />
+        <RadioGroup
+          disabled
+          value={summaryOptions.find((x) => x.value === 0)}
+          direction="row"
+          name="test"
+          options={summaryOptions}
+        />
       </Row>
       <Row>
         <FormikTextArea
@@ -117,34 +189,59 @@ export const PropertiesContentForm: React.FC<IContentSubForms> = ({ setContent, 
           style={{ width: '1000px', height: '400px' }}
         />
       </Row>
+      <Row>
+        <FormikText disabled name="tags" label="Tags" value={tags && tags.join(', ')} />
+        <Button
+          variant={ButtonVariant.danger}
+          style={{ marginTop: '1.16em' }}
+          onClick={() => {
+            const regex = /\[.*\]/;
+            setContent({ ...content, summary: content.summary.replace(regex, '') });
+            setTags([]);
+          }}
+        >
+          Clear Tags
+        </Button>
+      </Row>
       <Row style={{ marginTop: '2%' }}>
         <RadioGroup disabled label="Toning" direction="row" name="toning" options={toningOptions} />
       </Row>
       <Row style={{ marginTop: '2%' }}>
-        <Button disabled variant={ButtonVariant.action}>
-          Attach File
-        </Button>
-        <Button disabled variant={ButtonVariant.danger}>
-          Remove File
-        </Button>
+        <Upload />
       </Row>
       <Row style={{ marginTop: '2%' }}>
-        <FormikText disabled className="sm" name="prep" label="Prep Time" />
+        <FormikText className="sm" name="prep" label="Prep Time" />
         <Button
-          style={{ height: '40px', marginTop: '1.16em', marginRight: '2%' }}
+          style={{ marginTop: '1.16em', marginRight: '2%' }}
           variant={ButtonVariant.action}
-          disabled
+          onClick={() => {
+            setEffort(effort!! + Number((values as any).prep));
+          }}
         >
           Add
         </Button>
-        <FormikText disabled className="sm" name="total" label="Total" />
+        <FormikText disabled className="sm" name="total" label="Total" value={effort?.toString()} />
         <Button
-          disabled
-          style={{ height: '40px', marginTop: '1.16em' }}
+          onClick={() => {
+            setContent({ ...content, timeTrackings: values.timeTrackings });
+            toggle();
+          }}
+          style={{ marginTop: '1.16em' }}
           variant={ButtonVariant.action}
         >
           View Log
         </Button>
+        <Modal
+          hide={toggle}
+          isShowing={isShowing}
+          headerText="Prep Time Log"
+          body={<TimeLogTable totalTime={effort} data={content.timeTrackings} />}
+          customButtons={
+            <Button variant={ButtonVariant.action} onClick={toggle}>
+              Close
+            </Button>
+          }
+        />
       </Row>
     </Col>
   );

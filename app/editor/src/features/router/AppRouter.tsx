@@ -1,5 +1,5 @@
 import { AdminPage } from 'features/admin';
-import { ContentForm, ContentListView } from 'features/content';
+import { ContentForm, ContentListView, PrintContentForm } from 'features/content';
 import { Login } from 'features/login';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Claim, NotFound } from 'tno-core';
@@ -21,6 +21,7 @@ export const AppRouter = () => {
           <PrivateRoute redirectTo="/login" claims={Claim.administrator} element={<AdminPage />} />
         }
       />
+      <Route path="/contents/print/:id" element={<PrintContentForm />} />
       <Route
         path="/contents"
         element={

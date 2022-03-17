@@ -1,4 +1,5 @@
-import React from 'react';
+import { Row as CustomRow } from 'components/row';
+import React, { useState } from 'react';
 import { Column, Row, SortingRule, usePagination, useSortBy, useTable } from 'react-table';
 
 import { Pager, SortIndicator } from '.';
@@ -153,6 +154,14 @@ export const GridTable = <T extends object>({
     onChangeSort(sortBy);
   }, [onChangeSort, sortBy]);
 
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    if (data.length > 0) {
+      setLoading(false);
+    }
+  }, [data]);
+
   return (
     <styled.GridTable {...getTableProps()}>
       <div role="rowheader">
@@ -167,18 +176,25 @@ export const GridTable = <T extends object>({
           </div>
         ))}
       </div>
-      <div {...getTableBodyProps()}>
-        {page.map((row) => {
-          prepareRow(row);
-          return (
-            <div {...row.getRowProps()} onClick={() => onRowClick && onRowClick(row)}>
-              {row.cells.map((cell) => {
-                return <div {...cell.getCellProps()}>{cell.render('Cell')}</div>;
-              })}
-            </div>
-          );
-        })}
-      </div>
+      {loading ? (
+        <CustomRow style={{ justifyContent: 'center', marginTop: '5%' }}>
+          {/* <Spinner /> */}
+        </CustomRow>
+      ) : (
+        <div {...getTableBodyProps()}>
+          {page.map((row) => {
+            prepareRow(row);
+            return (
+              <div {...row.getRowProps()} onClick={() => onRowClick && onRowClick(row)}>
+                {row.cells.map((cell) => {
+                  return <div {...cell.getCellProps()}>{cell.render('Cell')}</div>;
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {showFooter && (
         <div>
           {footerGroups.map((footerGroup) => (

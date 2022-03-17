@@ -2,12 +2,16 @@ import { Button, ButtonVariant } from 'components/button';
 import { Col } from 'components/col';
 import { Area, IOptionItem, OptionItem } from 'components/form';
 import { FormikCheckbox, FormikDropdown, FormikText } from 'components/formik';
+import { Modal } from 'components/modal';
 import { Row } from 'components/row';
 import { Tab, Tabs } from 'components/tabs';
 import { Formik } from 'formik';
-import React from 'react';
+import { ContentStatus } from 'hooks';
+import useModal from 'hooks/modal/useModal';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useContent, useLookup } from 'store/hooks';
+import { useApp } from 'store/hooks/app/useApp';
 import { getSortableOptions } from 'utils';
 
 import { PropertiesContentForm } from '.';
@@ -24,7 +28,8 @@ export const ContentForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [{ mediaTypes }] = useLookup();
-  const [, { getContent, addContent, updateContent }] = useContent();
+  const [, { getContent, addContent, updateContent, deleteContent }] = useContent();
+  const { isShowing, toggle } = useModal();
 
   const [active, setActive] = React.useState('properties');
   const [mediaTypeOptions, setMediaTypeOptions] = React.useState<IOptionItem[]>([]);
@@ -34,8 +39,15 @@ export const ContentForm: React.FC = () => {
   });
   const [toggleCommentary, setToggleCommentary] = React.useState(true);
 
+  const fakeActions = [
+    { id: 2, value: 'true' },
+    { id: 6, value: 'true' },
+  ];
+
   // include id when it is an update, no idea necessary when new content
   const submitContent = async (values: IContentForm) => {
+    values.contentTypeId = 1;
+    values.ownerId = 1;
     const model = toModel(values);
     const result = !content.id ? await addContent(model) : await updateContent(model);
     toForm(result);
@@ -118,63 +130,71 @@ export const ContentForm: React.FC = () => {
                 <Row style={{ marginTop: '4.5%' }}>
                   <Col style={{ width: '215px' }}>
                     <FormikCheckbox
-                      disabled
                       className="chk"
                       name="publish"
                       labelRight
                       label="Publish"
+                      checked={
+                        content.status === ContentStatus.Publish ||
+                        content.status === ContentStatus.Published
+                      }
+                      onChange={(e: any) => {
+                        setContent({
+                          ...content,
+                          status: e.target.checked ? ContentStatus.Publish : ContentStatus.Draft,
+                        });
+                      }}
                     />
                     <FormikCheckbox
-                      disabled
                       className="chk"
                       name="alert"
                       labelRight
                       label="Alert"
+                      checked={!!fakeActions.find((x) => x.id === 2)}
                     />
                     <FormikCheckbox
                       className="chk"
                       name="frontPage"
                       labelRight
-                      disabled
                       label="Front Page"
+                      checked={!!fakeActions.find((x) => x.id === 3)}
                     />
                     <FormikCheckbox
                       name="commentary"
                       className="chk"
-                      disabled={!content.id}
                       onClick={() => setToggleCommentary(!toggleCommentary)}
                       labelRight
                       label="Commentary"
+                      checked={!!fakeActions.find((x) => x.id === 7)}
                     />
                   </Col>
                   <Col style={{ width: '215px' }}>
                     <FormikCheckbox
-                      disabled
                       className="chk"
                       name="topStory"
                       labelRight
-                      label="Top Story "
+                      label="Top Story"
+                      checked={!!fakeActions.find((x) => x.id === 4)}
                     />
                     <FormikCheckbox
-                      disabled
                       className="chk"
                       name="onTicker"
                       labelRight
                       label="On Ticker"
+                      checked={!!fakeActions.find((x) => x.id === 5)}
                     />
                     <FormikCheckbox
                       className="chk"
                       name="nonQualified"
-                      disabled
                       labelRight
                       label="Non Qualified Subject"
+                      checked={!!fakeActions.find((x) => x.id === 6)}
                     />
                   </Col>
                 </Row>
                 <Row>
                   <FormikText
                     name="timeout"
-                    value="NON FUNCTIONAL"
                     label="Commentary Timeout"
                     disabled={content.id ? toggleCommentary : true}
                     className="md"
@@ -207,13 +227,39 @@ export const ContentForm: React.FC = () => {
               </Tabs>
             </Row>
             <Row style={{ marginTop: '2%' }}>
-              <Button style={{ marginRight: '4%' }} type="submit" disabled={!!content.id}>
-                {!!content.id ? 'Create Snippet' : 'Update Snippet'}
+              <Button
+                style={{ marginRight: '4%' }}
+                type="submit"
+                onClick={async () => {
+                  try {
+                    submitContent(props.values);
+                  } finally {
+                    navigate('/contents');
+                  }
+                }}
+              >
+                {!content.id ? 'Create Snippet' : 'Update Snippet'}
               </Button>
-              <Button disabled variant={ButtonVariant.danger}>
-                Remove Snippet{' '}
+              <Button onClick={toggle} variant={ButtonVariant.danger}>
+                Remove Snippet
               </Button>
             </Row>
+            <Modal
+              headerText="Confirm Removal"
+              body="Are you sure you wish to remove this snippet?"
+              isShowing={isShowing}
+              hide={toggle}
+              type="delete"
+              confirmText="Yes, Remove It"
+              onConfirm={() => {
+                try {
+                  deleteContent(toModel(props.values));
+                } finally {
+                  toggle();
+                  navigate('/contents');
+                }
+              }}
+            />
           </Col>
         )}
       </Formik>

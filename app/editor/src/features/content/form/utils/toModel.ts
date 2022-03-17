@@ -20,6 +20,7 @@ export function toModel(values: IContentForm): IContentModel {
     headline: values.headline,
     source: values.source,
     page: values.page,
+    createdBy: 'osdagjdspgjdfjg',
     summary: values.summary,
     transcription: values.transcription,
     publishedOn: moment(values.publishedOn).toDate(), // TODO: If they haven't set the publishedOn it will cause an error.

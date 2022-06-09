@@ -92,6 +92,10 @@ export interface IGridTableProps<CT extends object = Record<string, unknown>> {
    * Flag to indicate whether table is loading data or not.
    */
   isLoading?: boolean;
+  /**
+   * Whether to include manual page sizing on the pager
+   */
+  manualPageSize?: boolean;
 }
 
 /**
@@ -99,7 +103,7 @@ export interface IGridTableProps<CT extends object = Record<string, unknown>> {
  * @param param1 GridTable properties.
  * @returns GridTable component.
  */
-export const GridTable = <T extends object = Record<string, unknown>>({
+export const GridTable = <T extends object>({
   className,
   columns,
   data,
@@ -112,6 +116,7 @@ export const GridTable = <T extends object = Record<string, unknown>>({
   sorting,
   isLoading,
   filters,
+  manualPageSize,
 }: IGridTableProps<T>) => {
   const {
     showPaging = true,
@@ -242,7 +247,7 @@ export const GridTable = <T extends object = Record<string, unknown>>({
           ))}
         </div>
       )}
-      {showPaging && <Pager {...pager} />}
+      {showPaging && <Pager manualPageSize={manualPageSize} {...pager} />}
     </styled.GridTable>
   );
 };

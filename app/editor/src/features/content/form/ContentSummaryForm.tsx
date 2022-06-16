@@ -174,7 +174,6 @@ export const ContentSummaryForm: React.FC<IContentSummaryFormProps> = ({
               placeholder={
                 !!values.publishedOn ? moment(values.publishedOn).format('HH:mm:ss') : 'HH:MM:SS'
               }
-              required
               label="Time"
               onChange={(e) => setPublishedOnTime(e.target.value)}
             />
@@ -305,7 +304,13 @@ export const ContentSummaryForm: React.FC<IContentSummaryFormProps> = ({
             hide={toggle}
             isShowing={isShowing}
             headerText="Prep Time Log"
-            body={<TimeLogTable totalTime={effort} data={values.timeTrackings} />}
+            body={
+              <TimeLogTable
+                setTotalEffort={setEffort}
+                totalEffort={effort}
+                data={values.timeTrackings}
+              />
+            }
             customButtons={
               <Button variant={ButtonVariant.secondary} onClick={toggle}>
                 Close

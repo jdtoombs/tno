@@ -9,6 +9,7 @@ import { useContent, useStorage } from 'store/hooks';
 import { Button, ButtonVariant, Col, Row, Text } from 'tno-core';
 
 import { defaultFolder } from '../../storage/constants';
+import { Breadcrumb } from './Breadcrumb';
 import { ClipDirectoryTable } from './ClipDirectoryTable';
 import { IContentForm } from './interfaces';
 import * as styled from './styled';

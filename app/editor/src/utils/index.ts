@@ -7,3 +7,4 @@ export * from './getEnumStringOptions';
 export * from './getFromLocalStorage';
 export * from './getSortableOptions';
 export * from './getUserOptions';
+export * from './hasErrors';

@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { useLookup } from 'store/hooks';
 import { useDataSources } from 'store/hooks/admin';
 import { Button, ButtonVariant, Col, Row, Tab, Tabs } from 'tno-core';
+import { hasErrors } from 'utils';
 
 import { DataSourceStatus } from '.';
 import { defaultDataSource } from './constants';
@@ -57,10 +58,6 @@ export const DataSourceForm: React.FC<IDataSourceProps> = (props) => {
       toast.success(`${result.name} has successfully been saved.`);
       if (!originalId) navigate(`/admin/data/sources/${result.id}`);
     } catch {}
-  };
-
-  const hasErrors = (errors: any, props: string[]) => {
-    return props.some((p) => !!errors[p]);
   };
 
   return (

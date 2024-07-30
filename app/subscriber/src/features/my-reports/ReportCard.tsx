@@ -98,7 +98,7 @@ export const ReportCard: React.FC<IReportCardProps> = ({
               </Row>
             )}
             <div>
-              <h3 className="upper">Status</h3>
+              <h3 className="upper status-section">Status</h3>
               <Show visible={!!instance}>
                 <Row>
                   <Col>Status:</Col>
